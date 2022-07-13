@@ -12,9 +12,10 @@ Fall-army-worm predict repo
 
 Open the terminal and type
   
-    python FAWPredict.py --mode [SELECT_MODE] --date [SELECT_DATE] --age [SELECT_AGE]
+    python FAWPredict.py --mode [SELECT_MODE] --location [SELECT_LOCATION] --date [SELECT_DATE] --age [SELECT_AGE]
     
 - [SELECT_MODE]: `regression` mode or `lookup` mode
+- [SELECT_LOCATION]: location to analyze (for example: Hanoi)
 - [SELECT_DATE]: format: yyyy-mm-dd (Example: 2022-04-01)
 - [SELECT_AGE]: a number from 0-8 represent for development stages of worm
 ```   
@@ -25,6 +26,6 @@ Open the terminal and type
 4: fourth instar
 5: fifth instar
 6: sixth instar
-7: pupal stage
-8: larval stage
+7: larval stage
+8: adult stage
 ```

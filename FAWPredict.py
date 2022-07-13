@@ -97,6 +97,9 @@ if __name__ == "__main__":
     if(cal_mode == "" or cur_time == "" or location == ""):
         print("Can't process now")
         exit()
+    if(location != "hanoi"):
+        print('Not enough data')
+        exit()
 
     calculate = FAWPrediction(cur_time, cur_age)
     if (cal_mode == "regression" and location == "hanoi"):

@@ -1,9 +1,13 @@
+from os import get_terminal_size
+from black import get_future_imports
 import pandas as pd
 import math
 import csv
 import datetime
 from datetime import date
 import sys
+
+from pyparsing import col
 
 weather_table = pd.read_csv("data/weather_data.csv")
 regression_table = pd.read_csv("data/regression_data.csv")
@@ -18,7 +22,13 @@ DEVELOPEMENT_STAGE = [
     'egg', 'instar_1', 'instar_2', 'instar_3', 'instar_4', 'instar_5', 'instar_6', 'larval', 'adult'
 ]
 NUM_STAGE = 8
+BASE_TEMPURATURE = 20
             
+def get_tempurature(query_time):
+    day_index = weather_table[weather_table['datetime'] == query_time].index.values[0]
+    temp = math.ceil(weather_table.temp[day_index])
+    temp = min(temp, 30)
+    return temp
 class FAWPrediction():
     def __init__(self, cur_time, cur_age):
         self.cur_time = cur_time
@@ -27,7 +37,19 @@ class FAWPrediction():
         self.cur_date = date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
         return
     def calculate_mode_lookup(self):
-        print("Can't process now")
+        temp = get_tempurature(self.cur_time)
+        dev_time = 0
+        dev_day = self.cur_date
+        i = self.cur_age
+        while(i != NUM_STAGE - 1):
+            temp = int(get_tempurature(str(dev_day)))
+            row_index = temp - BASE_TEMPURATURE+ 1
+            col_index = i + 1
+            dev_time = math.ceil(float(faw_table[row_index][col_index]))
+            dev_day = dev_day + datetime.timedelta(days=dev_time)
+            print(DEVELOPEMENT_STAGE[i], dev_day)
+            i = (i + 1) % NUM_STAGE
+        print('Time that worm in larval stage', dev_day)
         return
     def calculate_mode_regression(self):
         

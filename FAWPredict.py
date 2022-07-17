@@ -1,5 +1,4 @@
-from os import get_terminal_size
-from black import get_future_imports
+
 import pandas as pd
 import math
 import csv
@@ -15,7 +14,7 @@ faw_table = [[]]
 with open("data/faw_data.csv", newline="") as faw_file:
     reader = csv.reader(faw_file, delimiter=',')
     faw_table = [
-        [str(x) for x in row] for row in reader
+        [int(x) for x in row] for row in reader
     ]
 
 DEVELOPEMENT_STAGE = [
@@ -27,7 +26,6 @@ BASE_TEMPURATURE = 20
 def get_tempurature(query_time):
     day_index = weather_table[weather_table['datetime'] == query_time].index.values[0]
     temp = math.ceil(weather_table.temp[day_index])
-    temp = min(temp, 30)
     return temp
 class FAWPrediction():
     def __init__(self, cur_time, cur_age):
@@ -37,20 +35,29 @@ class FAWPrediction():
         self.cur_date = date(int(tmp[0]), int(tmp[1]), int(tmp[2]))
         return
     def calculate_mode_lookup(self):
-        temp = get_tempurature(self.cur_time)
+        age = self.cur_age
+        cur_k = 0
         dev_time = 0
         dev_day = self.cur_date
-        i = self.cur_age
-        while(i != NUM_STAGE - 1):
-            temp = int(get_tempurature(str(dev_day)))
-            row_index = temp - BASE_TEMPURATURE+ 1
-            col_index = i + 1
-            dev_time = math.ceil(float(faw_table[row_index][col_index]))
-            dev_day = dev_day + datetime.timedelta(days=dev_time)
-            print(DEVELOPEMENT_STAGE[i], dev_day)
-            i = (i + 1) % NUM_STAGE
-        print('Time that worm in larval stage', dev_day)
+        cur_period = 0
+        if(age == NUM_STAGE):
+            age = 0
+            dev_time = 3
+            dev_day = dev_day + datetime.timedelta(dev_time)
+            cur_k = get_tempurature(str(dev_day)) - faw_table[1][0]
+            print(DEVELOPEMENT_STAGE[age], (dev_day))
+        dev_time = 1
+        while (age < 8):
+            dev_day = dev_day + datetime.timedelta(dev_time)
+            temp = get_tempurature(str(dev_day))
+            cur_k += temp - faw_table[1][age]
+            print
+            if(cur_k > faw_table[2][age]):
+                age = age + 1
+                temp_day = dev_day + datetime.timedelta(dev_time)
+                print(DEVELOPEMENT_STAGE[age], temp_day)
         return
+    
     def calculate_mode_regression(self):
         
         def calculate_dev_day(stage, temp):
@@ -77,11 +84,10 @@ class FAWPrediction():
         while(i != NUM_STAGE - 1):
             temp = math.ceil(weather_table.temp[day_index + cnt])
             temp = min(temp, 30)
-            dev_time += calculate_dev_day(i, temp)
+            dev_time = calculate_dev_day(i, temp)
             dev_day = dev_day + datetime.timedelta(days=dev_time)
             print(DEVELOPEMENT_STAGE[i], dev_day)
             i = (i + 1) % NUM_STAGE
-        print('Time that worm in larval stage', dev_day)
         return    
 if __name__ == "__main__":
     cal_mode = ""
@@ -97,12 +103,9 @@ if __name__ == "__main__":
     if(cal_mode == "" or cur_time == "" or location == ""):
         print("Can't process now")
         exit()
-    if(location != "hanoi"):
-        print('Not enough data')
-        exit()
 
     calculate = FAWPrediction(cur_time, cur_age)
-    if (cal_mode == "regression" and location == "hanoi"):
+    if (cal_mode == "regression"):
         calculate.calculate_mode_regression()
     else:
         calculate.calculate_mode_lookup()

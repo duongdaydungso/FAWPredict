@@ -1,3 +1,6 @@
+scikit-learn
+numpy
 pandas
 typing-extensions
 datetime
+urllib

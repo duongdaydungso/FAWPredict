@@ -1,15 +1,18 @@
-
 from numpy import base_repr
 import pandas as pd
 import math
 import csv
+import codecs
+import urllib.request
+import urllib.error
 import datetime
 from datetime import date
+from api.weather_call import API_Reading
 import sys
 
 from pyparsing import col
 
-weather_table = pd.read_csv("data/weather_data.csv")
+global weather_table
 regression_table = pd.read_csv("data/regression_data.csv")
 """
 faw_table = [[]]
@@ -19,6 +22,17 @@ with open("data/faw_data.csv", newline="") as faw_file:
         [int(x) for x in row] for row in reader
     ]
 """
+
+cal_mode = "lookup"
+start_date = str(date.today())
+location = "vinhphuc"
+cur_age = 8
+content_type = 'csv'
+base_url = 'https://weather.visualcrossing.com/VisualCrossingWebServices/rest/services/timeline/'
+api_key = 'PXTVZ6VHXGANJUUMM4FAPYW2K'
+include = "days"
+end_date = str(datetime.date.today() + datetime.timedelta(13))
+unit_group = 'metric'
 
 DEVELOPEMENT_STAGE = [
     'egg', 'instar_1', 'instar_2', 'instar_3', 'instar_4', 'instar_5', 'instar_6', 'pupal', 'adult'
@@ -37,8 +51,12 @@ def create_faw_table():
             faw_table[1][i] += faw_table[1][i - 1]
 
 def get_tempurature(query_time: str):
-    day_index = weather_table[weather_table['datetime'] == query_time].index.values[0]
-    temp = int(weather_table.temp[day_index])
+    try:
+        day_index = weather_table[weather_table['datetime'] == query_time].index.values[0]
+    except IndexError:
+        print("Out of data range")
+        exit()
+    temp = int(float(weather_table.temp[day_index]))
     return temp
 
 class FAWPrediction():
@@ -60,6 +78,9 @@ class FAWPrediction():
             age = 0
             dev_time = 3
             dev_day = dev_day + datetime.timedelta(dev_time)
+            if(str(dev_day) > end_date):
+                print("Time is over")
+                sys.exit()
             cur_k = get_tempurature(str(dev_day)) - faw_table[0][0]
             print(DEVELOPEMENT_STAGE[0], (dev_day))
         dev_time = 1
@@ -93,7 +114,7 @@ class FAWPrediction():
         cnt = 0
         dev_day = self.cur_date
         if(age == NUM_STAGE):
-            dev_day += datetime.timedelta(dev_time)
+            dev_day += datetime.timedelta>(dev_time)
             print(DEVELOPEMENT_STAGE[0], dev_day)
             age = 0
         for i in range(age, NUM_STAGE):
@@ -104,21 +125,18 @@ class FAWPrediction():
 
 if __name__ == "__main__":
     create_faw_table()
-    cal_mode = "lookup"
-    cur_time = "2020-09-03"
-    location = "vinhphuc"
-    cur_age = 8
+    
     for i in range(len(sys.argv)):
         if(sys.argv[i] == "--mode"): cal_mode = sys.argv[i + 1]
         if(sys.argv[i] == "--location"): location = sys.argv[i + 1]
         if(sys.argv[i] == "--date"): cur_time = sys.argv[i + 1]
         if(sys.argv[i] == "--age"): cur_age = int(sys.argv[i + 1])
 
-    if(cal_mode == "" or cur_time == "" or location == ""):
-        print("Can't process now")
-        exit()
+    weather_table_api = API_Reading(base_url, api_key, location, start_date, end_date, unit_group, content_type, include)
+    weather_table_api.create_api()
+    weather_table = weather_table_api.run_api()
 
-    calculate = FAWPrediction(cur_time, cur_age)
+    calculate = FAWPrediction(start_date, cur_age)
     if (cal_mode == "regression"):
         calculate.calculate_mode_regression()
     else:

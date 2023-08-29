@@ -7,6 +7,7 @@ Fall-army-worm predict repo
 1. Clone repo
 2. `cd FAWpredict`
 3. `pip install -r requirements.txt`
+4. Copy .env.example into .env and fill in the API key
 
 ## How to run
 

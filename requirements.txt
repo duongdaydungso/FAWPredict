@@ -1,6 +1,6 @@
-scikit-learn
 numpy
 pandas
-typing-extensions
 datetime
-urllib
+pyparsing
+requests
+python-dotenv

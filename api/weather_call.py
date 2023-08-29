@@ -1,8 +1,5 @@
-from email import contentmanager
-import typing
 import csv
 import requests
-import json
 import codecs
 import urllib.request
 import urllib.error
@@ -35,7 +32,12 @@ class geocodingAPI(openAPI):
         return self.information["city"]["coord"]["lon"]
     def get_tempurature(self, date_query):
         delta = int((date_query - datetime.date.today()).days)
-        return int(self.information["list"][delta]["temp"]["day"])
+        try:
+            value = int(self.information["list"][delta]["temp"]["day"]) 
+            return value
+        except KeyError:        
+            print("Out of data range")
+            exit()
         
 class visualAPI():    
     def __init__(self, BASE_URL, API_KEY, LOCATION, START_DATE, END_DATE, UNIT_GROUP, CONTENT_GROUP, INCLUDE):
